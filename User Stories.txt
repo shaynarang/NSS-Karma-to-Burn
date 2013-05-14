@@ -1,0 +1,25 @@
+User Stories
+
+As a person who responds to feedback
+In order to feel motivated
+I want daily feedback from the program
+
+*Once the user has submitted answers to all daily questions, the program will render a brief response based on the user's daily progress
+
+As a record-keeping person
+In order to track progress
+I want to see a log of daily activities
+
+*User runs ktb 051313 to view the daily score and list of activities for May 13, 2013
+
+As a record-keeping person
+In order to track progress
+I want to see a graphical representation of my essential living
+
+*User runs ktb points to view total Karma Point accumulation via an x/y progression chart
+
+As a person who is interested in self-improvement
+In order to move toward goals
+I want to see a list of deficiencies
+
+*User runs ktb stats to view statistics for essential living categories via a bar chart
