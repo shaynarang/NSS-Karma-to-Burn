@@ -1,0 +1,145 @@
+#!/usr/bin/env ruby
+
+require 'date'
+
+require_relative 'bootstrap_ar'
+database = ENV['KTB_ENV'] || 'development'
+connect_to database
+
+command = ARGV[0]
+
+user_name = ARGV[1]
+params = { command: command, user: { name: user_name } }
+user_controller = UserController.new(params)
+
+admin_date = ARGV[1]
+daily_params = { command: command, daily_check_in: { date: admin_date } }
+daily_check_in_controller = DailyCheckInController.new(daily_params)
+
+if command == "add"
+  user_controller.add
+elsif command == "list"
+  user_controller.list
+elsif command == "remove"
+  user_controller.remove
+elsif command == "remove_all"
+  user_controller.remove_all
+elsif command == "list_daily"
+  daily_check_in_controller.list
+elsif command == "remove_daily"
+  daily_check_in_controller.remove
+elsif command == "remove_all_daily"
+  daily_check_in_controller.remove_all
+end
+
+def greeting
+  puts "Welcome to Karma to Burn.\nWhat is your first name?"
+  entered_name = gets.chomp
+  puts "Hello, #{entered_name}. What is your date of birth?"
+  entered_date_of_birth = gets.chomp
+  if User.where(:name => entered_name, :date_of_birth => entered_date_of_birth).exists?
+    puts "Welcome back, #{entered_name}."
+    current_user = User.where(name: entered_name, date_of_birth: entered_date_of_birth)
+    @current_user = current_user
+  else
+    puts "Greetings, #{entered_name}."
+    current_user = User.create(name: entered_name, date_of_birth: entered_date_of_birth)
+    @current_user = current_user
+  end
+  puts "Please assess the following statements. Type true if a statement pertains to you and false if it does not."
+  `read -sn 1 -p "Press any key to continue.\n"`
+end
+
+def date
+  time = Time.new
+  date = "#{time.year}-#{time.month}-#{time.day}"
+  @current_daily_check_in = @current_user.daily_check_ins.create(:date => date)
+end
+
+def physiological
+  puts "Aside from dieting and personal choice, I never starve through lack of food, nor lack of money to buy food. Aside from the usual trauma of moving house, I have no worry at all about having somewhere to live - I have ‘a roof over my head’."
+  physiological_response = gets.chomp
+  if physiological_response == "true"
+    @current_daily_check_in.update_attributes! :physiological_points => 1
+    `say "WELL DONE!"`
+  elsif physiological_response == "false"
+    @current_daily_check_in.update_attributes! :physiological_points => -1
+    `say "IMBECILE!"`
+  else
+    puts "Type true or false, imbecile."
+    `say "TYPE TRUE OR FALSE, IMBECILE!"`
+    physiological
+  end
+end
+
+def safety
+  puts "I generally feel safe and secure - job, home, etc - and protected from harm. My life generally has routine and structure - long periods of uncontrollable chaos are rare or non-existent."
+  safety_response = gets.chomp
+  if safety_response == "true"
+    @current_daily_check_in.update_attributes! :safety_points => 1
+    `say "WELL DONE!"`
+  elsif safety_response == "false"
+    @current_daily_check_in.update_attributes! :safety_points => -1
+    `say "IMBECILE!"`
+  else
+    puts "Type true or false, imbecile."
+    `say "TYPE TRUE OR FALSE, IMBECILE!"`
+    safety
+  end
+end
+
+def esteem
+  puts "I am successful in life and/or work, and I’m recognised by my peers for being so. I’m satisfied with the responsibility and role that I have in life and/or work, my status and reputation, and my level of self-esteem."
+  esteem_response = gets.chomp
+  if esteem_response == "true"
+    @current_daily_check_in.update_attributes! :esteem_points => 1
+    `say "WELL DONE!"`
+  elsif esteem_response == "false"
+    @current_daily_check_in.update_attributes! :esteem_points => -1
+    `say "IMBECILE!"`
+  else
+    puts "Type true or false, imbecile."
+    `say "TYPE TRUE OR FALSE, IMBECILE!"`
+    esteem
+  end
+end
+
+def love
+  puts "I am part of, and loved by, my family. I have good relationships with my friends and colleagues - they accept me for who I am."
+  love_response = gets.chomp
+  if love_response == "true"
+    @current_daily_check_in.update_attributes! :love_points => 1
+    `say "WELL DONE!"`
+  elsif love_response == "false"
+    @current_daily_check_in.update_attributes! :love_points => -1
+    `say "IMBECILE!"`
+  else
+    puts "Type true or false, imbecile."
+    `say "TYPE TRUE OR FALSE, IMBECILE!"`
+    love
+  end
+end
+
+def transcendence
+  puts "My aim is self-knowledge and enlightenment. The most important thing to me is realising my ultimate personal potential. I seek and welcome ‘peak’ experiences."
+  transcendence_response = gets.chomp
+  if transcendence_response == "true"
+    @current_daily_check_in.update_attributes! :transcendence_points => 1
+    `say "WELL DONE!"`
+  elsif transcendence_response == "false"
+    @current_daily_check_in.update_attributes! :transcendence_points => -1
+    `say "IMBECILE!"`
+  else
+  puts "Type true or false, imbecile."
+    `say "TYPE TRUE OR FALSE, IMBECILE!"`
+  transcendence
+  end
+end
+
+greeting
+date
+physiological
+safety
+esteem
+love
+transcendence
