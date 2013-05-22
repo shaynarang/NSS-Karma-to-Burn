@@ -12,8 +12,8 @@ user_name = ARGV[1]
 params = { command: command, user: { name: user_name } }
 user_controller = UserController.new(params)
 
-admin_date = ARGV[1]
-daily_params = { command: command, daily_check_in: { date: admin_date } }
+user_id = ARGV[1]
+daily_params = { command: command, daily_check_in: { user_id: user_id } }
 daily_check_in_controller = DailyCheckInController.new(daily_params)
 
 if command == "add"
@@ -24,6 +24,7 @@ elsif command == "remove"
   user_controller.remove
 elsif command == "remove_all"
   user_controller.remove_all
+
 elsif command == "list_daily"
   daily_check_in_controller.list
 elsif command == "remove_daily"
@@ -37,14 +38,13 @@ def greeting
   entered_name = gets.chomp
   puts "Hello, #{entered_name}. What is your date of birth?"
   entered_date_of_birth = gets.chomp
-  if User.where(:name => entered_name, :date_of_birth => entered_date_of_birth).exists?
+  if User.where(name: entered_name, date_of_birth: entered_date_of_birth).exists?
     puts "Welcome back, #{entered_name}."
-    current_user = User.where(name: entered_name, date_of_birth: entered_date_of_birth)
+    current_user = User.where(name: entered_name, date_of_birth: entered_date_of_birth).first
     @current_user = current_user
   else
     puts "Greetings, #{entered_name}."
-    current_user = User.create(name: entered_name, date_of_birth: entered_date_of_birth)
-    @current_user = current_user
+    @current_user = User.create(name: entered_name, date_of_birth: entered_date_of_birth)
   end
   puts "Please assess the following statements. Type true if a statement pertains to you and false if it does not."
   `read -sn 1 -p "Press any key to continue.\n"`
