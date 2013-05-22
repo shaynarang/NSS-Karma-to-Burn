@@ -9,7 +9,7 @@ class DailyCheckInController
   def list
     daily_check_ins = DailyCheckIn.all
     daily_check_ins.each_with_index do |daily_check_in, i|
-      puts "#{i+1}. #{daily_check_in.date}"
+      puts "#{i+1}. #{daily_check_in.date} user_id: #{daily_check_in.user_id}"
     end
   end
 

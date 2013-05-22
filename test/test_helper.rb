@@ -8,5 +8,6 @@ module DatabaseCleaner
   def before_setup
     super
     User.destroy_all
+    DailyCheckIn.destroy_all
   end
 end
