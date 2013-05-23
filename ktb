@@ -35,25 +35,41 @@ end
 
 def greeting
   puts "Welcome to Karma to Burn.\nWhat is your first name?"
-  entered_name = gets.chomp
+  entered_name = gets.chomp.capitalize
   puts "Hello, #{entered_name}. What is your date of birth?"
   entered_date_of_birth = gets.chomp
   if User.where(name: entered_name, date_of_birth: entered_date_of_birth).exists?
     puts "Welcome back, #{entered_name}."
-    current_user = User.where(name: entered_name, date_of_birth: entered_date_of_birth).first
-    @current_user = current_user
+    @current_user = User.where(name: entered_name, date_of_birth: entered_date_of_birth).first
+    check_in
   else
     puts "Greetings, #{entered_name}."
     @current_user = User.create(name: entered_name, date_of_birth: entered_date_of_birth)
+    @current_daily_check_in = @current_user.daily_check_ins.create(:date => date)
+    instructions
   end
-  puts "Please assess the following statements. Type true if a statement pertains to you and false if it does not."
-  `read -sn 1 -p "Press any key to continue.\n"`
 end
 
 def date
   time = Time.new
-  date = "#{time.year}-#{time.month}-#{time.day}"
-  @current_daily_check_in = @current_user.daily_check_ins.create(:date => date)
+  month = time.month
+  month = "%02d" % month
+  return "#{time.year}-#{month}-#{time.day}"
+end
+
+def check_in
+  last_check_in = @current_user.daily_check_ins.last.date
+  if last_check_in.to_s == date
+    puts "You have already been here today. Come back tomorrow, imbecile!"
+    exit
+  else
+    @current_daily_check_in = @current_user.daily_check_ins.create(:date => date)
+  end
+end
+
+def instructions
+  puts "Please assess the following statements. Type true if a statement pertains to you and false if it does not."
+  `read -sn 1 -p "Press any key to continue.\n"`
 end
 
 def physiological
@@ -68,6 +84,7 @@ def physiological
   else
     puts "Type true or false, imbecile."
     `say "TYPE TRUE OR FALSE, IMBECILE!"`
+
     physiological
   end
 end
@@ -136,10 +153,10 @@ def transcendence
   end
 end
 
-# greeting
-# date
-# physiological
-# safety
-# esteem
-# love
-# transcendence
+greeting
+date
+physiological
+safety
+esteem
+love
+transcendence
