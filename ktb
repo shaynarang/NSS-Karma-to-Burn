@@ -84,7 +84,6 @@ def physiological
   else
     puts "Type true or false, imbecile."
     `say "TYPE TRUE OR FALSE, IMBECILE!"`
-
     physiological
   end
 end
@@ -153,6 +152,32 @@ def transcendence
   end
 end
 
+def daily_points
+  current_check_in = DailyCheckIn.where(:date => date, :user_id => @current_user[:id]).first
+  daily_points = (current_check_in.physiological_points) + (current_check_in.safety_points) + (current_check_in.esteem_points) + (current_check_in.love_points) + (current_check_in.transcendence_points)
+end
+
+def total_points
+  daily_check_in = DailyCheckIn.where(:user_id => @current_user[:id]).all
+  total_points = 0
+  i = 0
+  until i == daily_check_in.length do
+    total_points = total_points + daily_check_in[i].physiological_points + daily_check_in[i].safety_points + daily_check_in[i].esteem_points + daily_check_in[i].love_points + daily_check_in[i].transcendence_points
+    i += 1
+  end
+  total_points
+end
+
+def daily_report
+  puts "You have earned #{daily_points} Karma Points."
+  if daily_points <= 1
+    puts "Get it together, imbecile."
+  else
+    puts "Well done, heathen."
+  end
+  puts "You have #{total_points} total points."
+end
+
 greeting
 date
 physiological
@@ -160,3 +185,5 @@ safety
 esteem
 love
 transcendence
+total_points
+daily_report
