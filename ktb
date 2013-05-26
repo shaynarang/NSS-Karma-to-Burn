@@ -54,40 +54,40 @@ def generate_greeting(name, date_of_birth)
   if User.where(name: name).exists? && User.where(date_of_birth: date_of_birth).exists?
     @current_user = User.where(name: name, date_of_birth: date_of_birth).first
     puts "Welcome back, #{name}.\n"
-    check_in
   else
     @current_user = User.create(name: name, date_of_birth: date_of_birth)
-    @current_daily_check_in = @current_user.daily_check_ins.create(:date => date)
-    puts @current_daily_check_in.physiological_points
+    @current_daily_check_in = @current_user.daily_check_ins.create(:date => date, :physiological_points => 0, :safety_points => 0, :esteem_points => 0, :love_points => 0, :transcendence_points => 0)
     return "Greetings, #{name}.\n", instructions
   end
+  check_in
 end
 
 def check_in
   last_check_in = @current_user.daily_check_ins.last.date
   if last_check_in.to_s == date
     puts "You have already been here today. Come back tomorrow, imbecile!"
+    `say "Imbecile!"`
     exit
   else
-    @current_daily_check_in = @current_user.daily_check_ins.create(:date => date)
-    puts @current_daily_check_in
+    @current_daily_check_in = @current_user.daily_check_ins.create(:date => date, :physiological_points => 0, :safety_points => 0, :esteem_points => 0, :love_points => 0, :transcendence_points => 0)
   end
 end
 
 def instructions
   return "Please assess the following statements. Type true if you agree and false if you don't."
-  # `read -sn 1 -p "Press any key to continue.\n"`
 end
 
 def analysis(response, category)
   if response == "true"
-    `say "well done!"`
+    `say "Well done!"`
     @current_daily_check_in.increment! category
   elsif response == "false"
-    `say "fail!"`
-    @current_daily_check_in.decrement! category
+    `say "Fail!"`
+    # @current_daily_check_in.decrement! category
   else
     puts "Type true or false, imbecile."
+    `say "Imbecile!"`
+    @current_daily_check_in.update_attributes! category => 0
     physiological if category == :physiological_points
     safety if category == :safety_points
     esteem if category == :esteem_points
@@ -100,16 +100,16 @@ def physiological
   statements = ["Today, I ate nutritious foods from most, if not all, of the food groups.", "I got enough sleep last night."]
   statements.each do |statement|
     puts statement
-    response = gets.chomp
+    response = gets.chomp.downcase
     analysis(response, :physiological_points)
   end
 end
 
 def safety
-  statements = ["I did not do anything reckless today. I acted with safely and caution in my daily exploits."]
+  statements = ["I did not do anything reckless today. I acted with caution in my daily exploits.", "I did not injure myself today."]
   statements.each do |statement|
     puts statement
-    response = gets.chomp
+    response = gets.chomp.downcase
     analysis(response, :safety_points)
   end
 end
@@ -118,25 +118,25 @@ def esteem
   statements = ["I am proud of my accomplishments today.", "I look forward to the challenges that tomorrow will bring."]
   statements.each do |statement|
     puts statement
-    response = gets.chomp
+    response = gets.chomp.downcase
     analysis(response, :esteem_points)
   end
 end
 
 def love
-  statements = ["Today, I attempted to spent time with people I care about."]
+  statements = ["Today, I attempted to spend time or communicate with people I care about.", "Today, the encounters I had with others were mostly positive."]
   statements.each do |statement|
     puts statement
-    response = gets.chomp
+    response = gets.chomp.downcase
     analysis(response, :love_points)
   end
 end
 
 def transcendence
-  statements = ["Today, I thought about the 'bigger picture'. I am curious about the world and my place in it. I seek enlightenment."]
+  statements = ["Today, I was curious about the world and my place in it.", "I learned something about myself today, even it is just a little."]
   statements.each do |statement|
     puts statement
-    response = gets.chomp
+    response = gets.chomp.downcase
     analysis(response, :transcendence_points)
   end
 end
@@ -144,6 +144,8 @@ end
 def daily_points
   current_check_in = DailyCheckIn.where(:date => date, :user_id => @current_user[:id]).first
   daily_points = (current_check_in.physiological_points) + (current_check_in.safety_points) + (current_check_in.esteem_points) + (current_check_in.love_points) + (current_check_in.transcendence_points)
+  @current_daily_check_in.update_attributes! :total_points => daily_points
+  daily_points
 end
 
 def total_points
@@ -157,15 +159,54 @@ def total_points
   total_points
 end
 
-def daily_report
-  puts "You have earned #{daily_points} Karma Points."
-  if daily_points <= 1
-    puts "Get it together, imbecile."
-  else
-    puts "Well done, heathen."
-  end
-  puts "You have #{total_points} total points."
+def total_minutes
+  total_time = total_points * 6
 end
+
+def daily_report
+  puts "You have earned #{daily_points} Karma Points today. You have a total of #{total_points} Karma Points."
+  if daily_points <= 4
+    puts "Get it together."
+    `say "Imbecile!"`
+  else
+    puts "Good work."
+    `say "Champion!"`
+  end
+end
+
+# def store
+#   puts "Would you like to spend any Karma Points today? Type yes or no."
+#   response = gets.chomp.downcase
+#   if response == "yes"
+#     puts "One Karma Point will bring you six minutes of bliss. How many points would you like to spend?"
+#   elsif response == "no"
+#     puts "Goodbye."
+#     exit
+#   else
+#     puts "Type yes or no, imbecile!"
+#     `say "Imbecile!"`
+#     store
+#   end
+#   spent_points = gets.chomp.to_i
+#   if spent_points.nan?
+#     puts "Type a number, imbecile!"
+#     `say "Imbecile!"`
+#     store
+#   end
+#   puts "Are you sure you would like to spend #{spent_points} points? Type yes or no."
+#   response = gets.chomp.downcase
+#   if response == "yes"
+#     @current_daily_check_in.update_attributes! :spent_points => spent_points
+#     new_total_points = total_points - spent_points
+#     @current_daily_check_in.update_attributes! :total_points => new_total_points
+#   elsif response == "no"
+#     store
+#   else
+#     puts "Type yes or no, imbecile!"
+#     `say "Imbecile!"`
+#     store
+#   end
+# end
 
 welcome
 date
@@ -176,3 +217,4 @@ love
 transcendence
 total_points
 daily_report
+# store

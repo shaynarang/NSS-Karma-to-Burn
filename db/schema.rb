@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130521150900) do
+ActiveRecord::Schema.define(:version => 20130525184300) do
 
   create_table "daily_check_ins", :force => true do |t|
     t.date    "date"
@@ -22,6 +22,7 @@ ActiveRecord::Schema.define(:version => 20130521150900) do
     t.integer "transcendence_points"
     t.integer "spent_points"
     t.integer "user_id"
+    t.integer "total_points"
   end
 
   create_table "users", :force => true do |t|
