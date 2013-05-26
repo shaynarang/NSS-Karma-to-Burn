@@ -36,8 +36,16 @@ end
 def welcome
   puts "Welcome to Karma to Burn.\nWhat is your first name?"
   entered_name = gets.chomp.capitalize
-  puts "Hello, #{entered_name}. What is your date of birth?"
-  entered_date_of_birth = gets.chomp
+  puts "Hello, #{entered_name}. What is your date of birth(mm-dd-yyyy)?"
+  entered_date_of_birth = gets.chomp.split('-')
+  month = entered_date_of_birth[0]
+  month = month.to_i
+  month = "%02d" % month
+  day = entered_date_of_birth[1]
+  day = day.to_i
+  day = "%02d" % day
+  year = entered_date_of_birth[2]
+  entered_date_of_birth = "#{year}-#{month}-#{day}"
   puts generate_greeting(entered_name, entered_date_of_birth)
   puts "Press enter to continue."
   gets
@@ -53,7 +61,7 @@ def date
 end
 
 def generate_greeting(name, date_of_birth)
-  if User.where(name: name).exists? && User.where(date_of_birth: date_of_birth).exists?
+  if (User.where(name: name).exists? && User.where(date_of_birth: date_of_birth).exists?)
     @current_user = User.where(name: name, date_of_birth: date_of_birth).first
     puts "Welcome back, #{name}.\n"
     check_in
@@ -69,8 +77,8 @@ def check_in
   if last_check_in.to_s == date
     puts "You have already been here today. Come back tomorrow, imbecile!"
     `say "Imbecile!"`
-    # @current_daily_check_in = DailyCheckIn.where(:date => date).first
-    # store
+    @current_daily_check_in = DailyCheckIn.new(:date => date, :physiological_points => 0, :safety_points => 0, :esteem_points => 0, :love_points => 0, :transcendence_points => 0, :user_id => @current_user.id, :spent_points => 0, :total_points => 0)
+    store
     exit
   else
     @current_daily_check_in = DailyCheckIn.new(:date => date, :physiological_points => 0, :safety_points => 0, :esteem_points => 0, :love_points => 0, :transcendence_points => 0, :user_id => @current_user.id, :spent_points => 0, :total_points => 0)
