@@ -33,8 +33,16 @@ elsif command == "remove_all_daily"
   daily_check_in_controller.remove_all
 end
 
+def commentary(genre)
+  insults = ["moron", "numb nuts", "dip shit", "idiot", "dummy", "fool", "cheese dick", "douche", "dick flap", "turd burgler", "scuzz bucket", "scumbag", "dunce", "lame brain", "ass", "bone head", "block head", "dimwit"]
+  compliments = ["boss", "beast", "bonus", "rad", "righteous", "dope", "super", "wicked", "groovy", "terrific", "fantastic", "outstanding", "bravo", "well done"]
+  `say "#{insults.sample}"` if genre == "insult"
+  `say "#{compliments.sample}"` if genre == "compliment"
+end
+
 def welcome
   puts "Welcome to Karma to Burn.\nWhat is your first name?"
+  `say "Welcome!"`
   entered_name = gets.chomp.capitalize
   puts "Hello, #{entered_name}. What is your date of birth(mm-dd-yyyy)?"
   entered_date_of_birth = gets.chomp.split('-')
@@ -46,63 +54,63 @@ def welcome
   day = "%02d" % day
   year = entered_date_of_birth[2]
   entered_date_of_birth = "#{year}-#{month}-#{day}"
-  puts generate_greeting(entered_name, entered_date_of_birth)
-  puts "Press enter to continue."
-  gets
+  generate_greeting(entered_name, entered_date_of_birth)
 end
 
 def date
   time = Time.new
   month = time.month
   month = "%02d" % month
-  day = 4
+  day = time.day
   day = "%02d" % day
-  return "#{time.year}-#{month}-#{day}"
+  "#{time.year}-#{month}-#{day}"
 end
 
 def generate_greeting(name, date_of_birth)
   if (User.where(name: name).exists? && User.where(date_of_birth: date_of_birth).exists?)
     @current_user = User.where(name: name, date_of_birth: date_of_birth).first
-    return check_in
+    puts "Welcome back, #{name}.\n"
+    check_in
   else
     @current_user = User.create(name: name, date_of_birth: date_of_birth)
     @current_daily_check_in = DailyCheckIn.new(:date => date, :physiological_points => 0, :safety_points => 0, :esteem_points => 0, :love_points => 0, :transcendence_points => 0, :user_id => @current_user.id, :spent_points => 0, :total_points => 0)
-    return "Greetings, #{name}.\n", instructions
+    instructions
   end
 end
 
 def check_in
   last_check_in = @current_user.daily_check_ins.last.date
   if last_check_in.to_s == date
-    puts "Back so soon?"
     @current_daily_check_in = DailyCheckIn.new(:date => date, :physiological_points => 0, :safety_points => 0, :esteem_points => 0, :love_points => 0, :transcendence_points => 0, :user_id => @current_user.id, :spent_points => 0, :total_points => 0)
-    puts "Would you like to view your progress?"
+    puts "Back so soon?\nEnter p to view your progress. Enter s to spend Karma Points. Press enter to exit."
     response = gets.chomp.downcase
-    if response == "yes"
-      puts "\n"
-      return progress
-    else
-      return store
+    progress if response == "p"
+    store if response == "s"
+    if response != "p" && response != "s"
+      puts "Goodbye"
+      exit
     end
   else
-    puts "Welcome back, #{name}.\n"
     @current_daily_check_in = DailyCheckIn.new(:date => date, :physiological_points => 0, :safety_points => 0, :esteem_points => 0, :love_points => 0, :transcendence_points => 0, :user_id => @current_user.id, :spent_points => 0, :total_points => 0)
+    instructions
   end
 end
 
 def instructions
-  return "Please assess the following statements. Type true if you agree and false if you don't."
+  puts "Please assess the following statements. Enter true if you agree and false if you don't.\nPress enter to continue."
+  gets
 end
 
 def analysis(response, category)
   if response == "true"
-    `say "Well done!"`
+    commentary("compliment")
     @current_daily_check_in.increment! category
   elsif response == "false"
-    `say "Fail!"`
-    # @current_daily_check_in.decrement! category
+    commentary("insult")
+    #the following line simply initiates the daily_check_in table. this prevents a nil no-method error from occurring if a user types false for every question. it has no other practical purpose.
+    @current_daily_check_in.update_attributes! :spent_points => 0
   else
-    puts "Type true or false, imbecile."
+    puts "Enter true or false, imbecile."
     `say "Imbecile!"`
     @current_daily_check_in.update_attributes! category => 0
     physiological if category == :physiological_points
@@ -161,7 +169,6 @@ end
 def daily_points
   current_check_in = DailyCheckIn.where(:date => date, :user_id => @current_user[:id]).first
   todays_points = current_check_in.physiological_points + current_check_in.safety_points + current_check_in.esteem_points + current_check_in.love_points + current_check_in.transcendence_points
-  # @current_daily_check_in.update_attributes! :total_points => todays_points
   todays_points
 end
 
@@ -179,51 +186,39 @@ def total_points
 end
 
 def total_minutes(karma_points)
+  #i have arbitrarily assigned six minutes to one karma point. seems reasonable.
   total_time = karma_points * 6
 end
 
 def daily_report
   puts "You have earned #{daily_points} Karma Points today."
-  if daily_points <= 4
-    puts "Get it together."
-    `say "Imbecile!"`
-  else
-    puts "Good work."
-    `say "Champion!"`
-  end
+  @current_daily_check_in.update_attributes! :total_points => daily_points
 end
 
 def store
-  puts "You have a total of #{total_points} Karma Points. Would you like to spend any Karma Points today?"
+  puts "You have a total of #{total_points} Karma Points.\nEnter s to spend Karma Points. Enter p to view your progress. Press enter to exit."
   response = gets.chomp.downcase
-  if response == "yes"
-    puts "One Karma Point will get you six minutes of freedom. How many points would you like to spend?"
-  elsif response == "no"
-    puts "Goodbye."
-    exit
-  else
-    puts "Type yes or no, imbecile!"
-    `say "Imbecile!"`
-    store
+  progress if response == "p"
+  puts "One Karma Point will get you six minutes of freedom. How many points would you like to spend?" if response == "s"
+  if (response != "p" && response != "s")
+    puts "Goodbye"
+    exit 
   end
   redeemed_points = gets.chomp.to_i
   if redeemed_points > total_points
     puts "You cannot spend more than you have earned, imbecile."
-    `say "Imbecile!"`
+    `say "#{commentary("insult")}"`
     store
   else
-    puts "Are you sure you would like to spend #{redeemed_points} Karma Points?"
+    puts "Enter yes if would like to spend #{redeemed_points} Karma Points. Otherwise, just press enter."
     response = gets.chomp.downcase
     if response == "yes"
       @current_daily_check_in.update_attributes! :spent_points => redeemed_points
       @current_daily_check_in.update_attributes! :total_points => total_points
-      puts "You have #{total_minutes(redeemed_points)} minutes to do whatever you desire! You have #{total_points} Karma Points remaining."
+      puts "You have #{total_minutes(redeemed_points)} minutes to do whatever you desire. You have #{total_points} Karma Points remaining. Enjoy."
+      `say "#{commentary("compliment")}"`
       exit
-    elsif response == "no"
-      store
     else
-      puts "Type yes or no, imbecile!"
-      `say "Imbecile!"`
       store
     end
   end
@@ -240,21 +235,27 @@ end
 def progress
   daily_check_ins = DailyCheckIn.where(:user_id => @current_user[:id]).all
   counter = 0
-  puts "   Date      Earned  Spent  Remaining   Progress\n"
+  daily_total_points = 0
+  puts "\n   Date      Earned  Spent  Balance   Progress\n"
   until counter == daily_check_ins.length do
     date = daily_check_ins[counter].date
-    daily_remaining_points = daily_check_ins[counter].total_points
-    daily_remaining_points = "%02d" % daily_remaining_points
-    daily_spent_points = daily_check_ins[counter].spent_points
-    daily_spent_points = "%02d" % daily_spent_points
     daily_earned_points = daily_check_ins[counter].physiological_points + daily_check_ins[counter].safety_points + daily_check_ins[counter].esteem_points + daily_check_ins[counter].love_points + daily_check_ins[counter].transcendence_points
     daily_earned_points = "%02d" % daily_earned_points
-    puts "#{date}  |  #{daily_earned_points}  |  #{daily_spent_points}  |    #{daily_remaining_points}    |  #{star_printer(daily_earned_points.to_i)} "
+    daily_spent_points = daily_check_ins[counter].spent_points
+    daily_spent_points = "%02d" % daily_spent_points
+    daily_total_points = daily_total_points.to_i + daily_earned_points.to_i
+    daily_total_points = daily_total_points - daily_spent_points.to_i
+    daily_total_points = "%02d" % daily_total_points
+    puts "#{date}  |  #{daily_earned_points}  |  #{daily_spent_points}  |   #{daily_total_points}   |  #{star_printer(daily_total_points.to_i)} "
     counter += 1
   end
-  puts "\nPress enter to continue."
-  gets
-  store
+  puts "\nEnter s to spend Karma Points or press enter to exit."
+  response = gets.chomp.downcase
+  store if response == "s"
+  if response != "s"
+    puts "Goodbye"
+    exit
+  end
 end
 
 welcome
