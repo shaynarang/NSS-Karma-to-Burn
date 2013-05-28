@@ -37,7 +37,7 @@ end
 
 def commentary(genre)
   insults = ["moron", "numb nuts", "dip shit", "idiot", "dummy", "fool", "cheese dick", "douche", "dick flap", "turd burgler", "scuzz bucket", "scumbag", "dunce", "lame", "ass", "dick weed", "dimwit", "butt puppet", "dumbass", "ass clown", "fail", "useless"]
-  compliments = ["boss", "beast", "bonus", "rad", "righteous", "dope", "super", "wicked", "groovy", "terrific", "fantastic", "outstanding", "bravo", "well done", "tremendous", "brilliant"]
+  compliments = ["boss", "beast", "bonus", "rad", "righteous", "dope", "super", "wicked", "groovy", "terrific", "fantastic", "outstanding", "bravo", "well done", "tremendous", "brilliant", "rock on"]
   `say "#{insults.sample}"` if genre == "insult"
   `say "#{compliments.sample}"` if genre == "compliment"
 end
@@ -94,7 +94,7 @@ def check_in
 end
 
 def instructions
-  puts colorize("Please assess the following statements. Enter if you agree and false if you don't.", RED)
+  puts colorize("Please assess the following statements. Enter true if you agree and false if you don't.", RED)
   puts "Press enter to continue."
   gets
 end
