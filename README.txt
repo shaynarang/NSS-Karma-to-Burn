@@ -20,12 +20,13 @@ As of 05-27-2013, this application effectively prompts users, renders responses,
 
 Known Bugs:
 
-As of 05-27-2013, there is an issue aggregating data for multiple users with the same name. A first user with any name can be successfully added to the SQLite Database with no issue. However, should a second user with the same name as the first user get entered, the SQLite database does not create and store a unique id for this second user. This does not apply to multiple users with the same date of birth.
+1. As of 05-27-2013, there is an issue aggregating data for multiple users with the same name. A first user with any name can be successfully added to the SQLite Database with no issue. However, should a second user with the same name as the first user get entered, the SQLite database does not create and store a unique id for this second user. This does not apply to multiple users with the same date of birth.
 
 To Do:
 
 1. The known bug as of 05-27-2013 needs to be addressed
-2. It may be beneficial to include individual categories on the progress chart
+2. Name and date of birth validation needs to be added
+3. It may be beneficial to include individual categories on the progress chart
 
 Demo:
 

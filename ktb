@@ -79,12 +79,13 @@ def check_in
   last_check_in = @current_user.daily_check_ins.last.date
   if last_check_in.to_s == date
     @current_daily_check_in = DailyCheckIn.new(:date => date, :physiological_points => 0, :safety_points => 0, :esteem_points => 0, :love_points => 0, :transcendence_points => 0, :user_id => @current_user.id, :spent_points => 0, :total_points => 0)
-    puts "Back so soon?\nEnter p to view your progress. Enter s to spend Karma Points. Press enter to exit."
+    puts "Back so soon?\nEnter p to view your progress. Enter s to hit the Karma Store. Press enter to exit."
     response = gets.chomp.downcase
     progress if response == "p"
     store if response == "s"
     if response != "p" && response != "s"
       puts "Goodbye"
+      `say "Goodbye"`
       exit
     end
   else
@@ -202,19 +203,24 @@ def store
   puts "One Karma Point will get you six minutes of freedom. How many points would you like to spend?" if response == "s"
   if (response != "p" && response != "s")
     puts "Goodbye"
+    `say "Goodbye"`
     exit 
   end
   redeemed_points = gets.chomp.to_i
   if redeemed_points > total_points
     puts "You cannot spend more than you have earned, imbecile."
-    `say "#{commentary("insult")}"`
+    commentary("insult")
+    store
+  elsif redeemed_points <= 0
+    puts "You cannot spend 0 or less points, imbecile."
+    commentary("insult")
     store
   else
     puts "Enter yes if would like to spend #{colorize(redeemed_points, RED)} Karma Points. Otherwise, just press enter." if redeemed_points > 1
     puts "Enter yes if would like to spend #{colorize(redeemed_points, RED)} Karma Point. Otherwise, just press enter." if redeemed_points == 1
     if redeemed_points == 0
       puts colorize("You can't spend 0 points, imbecile. Try again.", RED)
-      `say "#{commentary("insult")}"`
+      commentary("insult")
       store
     end
     response = gets.chomp.downcase
@@ -222,7 +228,8 @@ def store
       @current_daily_check_in.update_attributes! :spent_points => redeemed_points
       puts "You have #{colorize(total_minutes(redeemed_points), RED)} minutes to do whatever you desire. You have #{colorize("1", RED)} Karma Point remaining. Enjoy." if total_points == 1
       puts "You have #{colorize(total_minutes(redeemed_points), RED)} minutes to do whatever you desire. You have #{colorize(total_points, RED)} Karma Points remaining. Enjoy." if (total_points > 1 || total_points == 0)
-      `say "#{commentary("compliment")}"`
+      commentary("compliment")
+      `say "Goodbye"`
       exit
     else
       store
@@ -250,14 +257,15 @@ def progress
     daily_spent_points = daily_check_ins[counter].spent_points
     daily_total_points = daily_total_points.to_i + daily_earned_points.to_i
     balance = balance + daily_check_ins[counter].total_points - daily_check_ins[counter].spent_points
-    puts "#{date}  |  #{"%02d" % daily_earned_points}  |  #{"%02d" % daily_spent_points}  |   #{"%02d" % balance}   |  #{colorize(star_printer(daily_total_points), RED)} "
+    puts "#{date}  |  #{"%02d" % daily_earned_points}  |  #{"%02d" % daily_spent_points}  |   #{"%02d" % balance}   |  #{colorize(star_printer(balance), RED)} "
     counter += 1
   end
-  puts "\nEnter s to spend Karma Points or press enter to exit."
+  puts "\nEnter s to go to the Karma Store or press enter to exit."
   response = gets.chomp.downcase
   store if response == "s"
   if response != "s"
     puts "Goodbye"
+    `say "Goodbye"`
     exit
   end
 end
