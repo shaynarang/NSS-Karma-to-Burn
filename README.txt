@@ -16,6 +16,8 @@ To run the program, the user must type 'ruby ktb'. Thereafter, user entry instru
 
 Project Status:
 
+[![Build Status](https://travis-ci.org/github.com/shaynarang/NSS-Karma-to-Burn.png)](https://travis-ci.org/github.com/shaynarang/NSS-Karma-to-Burn)
+
 As of 05-27-2013, this application effectively prompts users, renders responses, and aggregates data accordingly. 
 
 Known Bugs:
