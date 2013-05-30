@@ -70,7 +70,7 @@ def generate_greeting(name, date_of_birth)
     check_in
   else
     @current_user = User.create(name: name, date_of_birth: date_of_birth)
-    @current_daily_check_in = DailyCheckIn.new(:date => date, :physiological_points => 0, :safety_points => 0, :esteem_points => 0, :love_points => 0, :transcendence_points => 0, :user_id => @current_user.id, :spent_points => 0, :total_points => 0)
+    @current_daily_check_in = DailyCheckIn.new(:date => date, :physiological_points => 0, :safety_points => 0, :esteem_points => 0, :love_points => 0, :transcendence_points => 0, :user_id => @current_user.id, :spent_points => 0, :earned_points => 0)
     instructions
   end
 end
@@ -78,7 +78,7 @@ end
 def check_in
   last_check_in = @current_user.daily_check_ins.last.date
   if last_check_in.to_s == date
-    @current_daily_check_in = DailyCheckIn.new(:date => date, :physiological_points => 0, :safety_points => 0, :esteem_points => 0, :love_points => 0, :transcendence_points => 0, :user_id => @current_user.id, :spent_points => 0, :total_points => 0)
+    @current_daily_check_in = DailyCheckIn.new(:date => date, :physiological_points => 0, :safety_points => 0, :esteem_points => 0, :love_points => 0, :transcendence_points => 0, :user_id => @current_user.id, :spent_points => 0, :earned_points => 0)
     puts "Back so soon?\nEnter p to view your progress. Enter s to hit the Karma Store. Press enter to exit."
     response = gets.chomp.downcase
     progress if response == "p"
@@ -89,7 +89,7 @@ def check_in
       exit
     end
   else
-    @current_daily_check_in = DailyCheckIn.new(:date => date, :physiological_points => 0, :safety_points => 0, :esteem_points => 0, :love_points => 0, :transcendence_points => 0, :user_id => @current_user.id, :spent_points => 0, :total_points => 0)
+    @current_daily_check_in = DailyCheckIn.new(:date => date, :physiological_points => 0, :safety_points => 0, :esteem_points => 0, :love_points => 0, :transcendence_points => 0, :user_id => @current_user.id, :spent_points => 0, :earned_points => 0)
     instructions
   end
 end
@@ -177,7 +177,7 @@ def total_points
   past_spent_points = 0
   counter = 0
   until counter == current_check_in.length do
-    past_daily_points = past_daily_points + current_check_in[counter].physiological_points + current_check_in[counter].safety_points + current_check_in[counter].esteem_points + current_check_in[counter].love_points + current_check_in[counter].transcendence_points
+    past_daily_points = past_daily_points + current_check_in[counter].earned_points
     past_spent_points = past_spent_points + current_check_in[counter].spent_points
     counter += 1
   end
@@ -192,7 +192,7 @@ end
 def daily_report
   puts "You have earned #{colorize(daily_points, RED)} Karma Points today." if (daily_points > 1 || daily_points == 0)
   puts "You have earned #{colorize(daily_points, RED)} Karma Point today." if daily_points == 1
-  @current_daily_check_in.update_attributes! :total_points => daily_points
+  @current_daily_check_in.update_attributes! :earned_points => daily_points
 end
 
 def store
@@ -253,11 +253,10 @@ def progress
   puts "\n   Date      Earned  Spent  Balance   Progress\n"
   until counter == daily_check_ins.length do
     date = daily_check_ins[counter].date
-    daily_earned_points = daily_check_ins[counter].physiological_points + daily_check_ins[counter].safety_points + daily_check_ins[counter].esteem_points + daily_check_ins[counter].love_points + daily_check_ins[counter].transcendence_points
     daily_spent_points = daily_check_ins[counter].spent_points
-    daily_total_points = daily_total_points.to_i + daily_earned_points.to_i
-    balance = balance + daily_check_ins[counter].total_points - daily_check_ins[counter].spent_points
-    puts "#{date}  |  #{"%02d" % daily_earned_points}  |  #{"%02d" % daily_spent_points}  |   #{"%02d" % balance}   |  #{colorize(star_printer(balance), RED)} "
+    daily_total_points = daily_total_points.to_i + daily_check_ins[counter].earned_points.to_i
+    balance = balance + daily_check_ins[counter].earned_points - daily_check_ins[counter].spent_points
+    puts "#{date}  |  #{"%02d" % daily_check_ins[counter].earned_points}  |  #{"%02d" % daily_spent_points}  |   #{"%02d" % balance}   |  #{colorize(star_printer(balance), RED)} "
     counter += 1
   end
   puts "\nEnter s to go to the Karma Store or press enter to exit."
