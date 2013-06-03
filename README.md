@@ -12,26 +12,24 @@ A user can log Karma Points only once a day though he/she can return to the prog
 
 ## Usage Instructions:
 
-To run the program, the user must type 'ruby ktb'. Thereafter, instructions are provided by the application itself.
+To run the program, the user must type 'ruby ktb run'. Thereafter, instructions are provided by the application itself.
 
 ## Project Status:
 
 [![Code Climate](https://codeclimate.com/github/shaynarang/NSS-Karma-to-Burn.png)](https://codeclimate.com/github/shaynarang/NSS-Karma-to-Burn)
-[![Build Status](https://travis-ci.org/github.com/shaynarang/NSS-Karma-to-Burn.png)](https://travis-ci.org/github.com/shaynarang/NSS-Karma-to-Burn)
+[![Build Status](https://travis-ci.org/shaynarang/NSS-Karma-to-Burn.png)](https://travis-ci.org/[shaynarang/NSS-Karma-to-Burn)
 
 As of 05-27-2013, this application effectively prompts users, accepts responses, aggregates data, and provides feedback accordingly.
 
 ## Known Bugs:
 
 - As of 05-27-2013, there is an issue aggregating data for multiple users with the same name. A first user with any name can be successfully added to the SQLite Database with no issue. However, should a second user with the exact same name as the first user get entered, the SQLite database does not create and store a unique id for this second user, nor does it point to the first user.
-- As of 05-27-2013, there is sometimes an issue when a user answers a question with a value that is not 'true' or 'false'. The command line will sometimes prompt the user with the same question several times thereafter. 
 
 ## To Do:
 
-- The known bugs as of 05-27-2013 needs to be addressed
+- The known bug as of 05-27-2013 needs to be addressed
 - Name and date of birth validation needs to be added
 - It may be beneficial to include individual categories on the progress chart
-- The file structure needs to be updated: some of the methods in the executable ktb.rb file should belong to models
 
 ## Demo:
 

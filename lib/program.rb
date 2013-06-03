@@ -1,4 +1,12 @@
+require './bootstrap_ar'
+
 class Program
+
+  PHYSIOLOGICAL = ["Today, I ate nutritious foods from most, if not all, of the food groups.", "I got enough sleep last night."]
+  SAFETY = ["I did not do anything reckless today. I acted with caution in my daily exploits.", "I did not injure myself today."]
+  ESTEEM = ["I am proud of my accomplishments today.", "I look forward to the challenges that tomorrow will bring."]
+  LOVE = ["Today, I attempted to spend time or communicate with people I care about.", "Today, the encounters I had with others were mostly positive."]
+  TRANSCENDENCE = ["Today, I was curious about the world and my place in it.", "I learned something about myself today, even it is just a little."]
 
   def commentary(genre)
     insults = ["moron", "numb nuts", "dip shit", "idiot", "dummy", "fool", "cheese dick", "douche", "dick flap", "turd burgler", "scuzz bucket", "scumbag", "dunce", "lame", "ass", "dick weed", "dimwit", "butt puppet", "dumbass", "ass clown", "fail", "useless"]
@@ -21,13 +29,6 @@ class Program
     generate_greeting(entered_name, entered_date_of_birth)
   end
 
-  def date
-    time = Time.new
-    month = time.month
-    day = time.day
-    "#{time.year}-#{"%02d" % month}-#{"%02d" % day}"
-  end
-
   def generate_greeting(name, date_of_birth)
     if (User.where(name: name).exists? && User.where(date_of_birth: date_of_birth).exists?)
       @current_user = User.where(name: name, date_of_birth: date_of_birth).first
@@ -35,15 +36,15 @@ class Program
       check_in
     else
       @current_user = User.create(name: name, date_of_birth: date_of_birth)
-      @current_daily_check_in = DailyCheckIn.new(:date => date, :physiological_points => 0, :safety_points => 0, :esteem_points => 0, :love_points => 0, :transcendence_points => 0, :user_id => @current_user.id, :spent_points => 0, :earned_points => 0)
+      create_daily_check_in_instance
       instructions
     end
   end
 
   def check_in
     last_check_in = @current_user.daily_check_ins.last.date
-    if last_check_in.to_s == date
-      @current_daily_check_in = DailyCheckIn.new(:date => date, :physiological_points => 0, :safety_points => 0, :esteem_points => 0, :love_points => 0, :transcendence_points => 0, :user_id => @current_user.id, :spent_points => 0, :earned_points => 0)
+    if last_check_in.to_s == DailyCheckIn.date
+      create_daily_check_in_instance
       puts "Back so soon?\nEnter p to view your progress. Enter s to hit the Karma Store. Press enter to exit."
       response = STDIN.gets.chomp.downcase
       progress if response == "p"
@@ -54,15 +55,19 @@ class Program
         exit
       end
     else
-      @current_daily_check_in = DailyCheckIn.new(:date => date, :physiological_points => 0, :safety_points => 0, :esteem_points => 0, :love_points => 0, :transcendence_points => 0, :user_id => @current_user.id, :spent_points => 0, :earned_points => 0)
+      create_daily_check_in_instance
       instructions
     end
   end
 
+  def create_daily_check_in_instance
+    @current_daily_check_in = DailyCheckIn.new(:date => DailyCheckIn.date, :physiological_points => 0, :safety_points => 0, :esteem_points => 0, :love_points => 0, :transcendence_points => 0, :user_id => @current_user.id, :spent_points => 0, :earned_points => 0)
+  end
+
   def instructions
     puts colorize("Please assess the following statements. Enter true if you agree and false if you don't.", RED)
-    # puts "Press enter to continue."
-    # STDIN.gets
+    puts "Press enter to continue."
+    STDIN.gets
   end
 
   def analysis(response, category)
@@ -71,67 +76,40 @@ class Program
       @current_daily_check_in.increment! category
     elsif response == "false"
       commentary("insult")
-      #the following line simply initiates the daily_check_in table. this prevents a nil no-method error from occurring if a user types false for every question. it has no other practical purpose.
+      #the following line simply initiates the daily_check_in table. this prevents a nil no-method error from occurring if a user types false for every question.
       @current_daily_check_in.increment! category, by = 0
-    else
-      puts colorize("Enter true or false, imbecile.", RED)
-      `say "Imbecile!"`
-      @current_daily_check_in.update_attributes! category => 0
-      physiological if category == :physiological_points
-      safety if category == :safety_points
-      esteem if category == :esteem_points
-      love if category == :love_points
-      transcendence if category == :transcendence_points
     end
   end
 
-  def physiological
-    statements = ["Today, I ate nutritious foods from most, if not all, of the food groups.", "I got enough sleep last night."]
-    statements.each do |statement|
-      puts statement
-      response = STDIN.gets.chomp.downcase
-      analysis(response, :physiological_points)
-    end
-  end
-
-  def safety
-    statements = ["I did not do anything reckless today. I acted with caution in my daily exploits.", "I did not injure myself today."]
-    statements.each do |statement|
-      puts statement
-      response = STDIN.gets.chomp.downcase
-      analysis(response, :safety_points)
-    end
-  end
-
-  def esteem
-    statements = ["I am proud of my accomplishments today.", "I look forward to the challenges that tomorrow will bring."]
-    statements.each do |statement|
-      puts statement
-      response = STDIN.gets.chomp.downcase
-      analysis(response, :esteem_points)
-    end
-  end
-
-  def love
-    statements = ["Today, I attempted to spend time or communicate with people I care about.", "Today, the encounters I had with others were mostly positive."]
-    statements.each do |statement|
-      puts statement
-      response = STDIN.gets.chomp.downcase
-      analysis(response, :love_points)
-    end
-  end
-
-  def transcendence
-    statements = ["Today, I was curious about the world and my place in it.", "I learned something about myself today, even it is just a little."]
-    statements.each do |statement|
-      puts statement
-      response = STDIN.gets.chomp.downcase
-      analysis(response, :transcendence_points)
+  def statements
+    compiled_statements = [PHYSIOLOGICAL, SAFETY, ESTEEM, LOVE, TRANSCENDENCE]
+    compiled_statements.each do | statements |
+      statements.each do | statement |
+        puts statement
+        response = STDIN.gets.chomp.downcase
+        if (response != "true" and response != "false")
+          puts colorize("Enter true or false, imbecile.", RED)
+          commentary("insult")
+          redo
+        end
+        if statements == PHYSIOLOGICAL
+          category = :physiological_points
+        elsif statements == SAFETY
+          category = :safety_points
+        elsif statements == ESTEEM
+          category = :esteem_points
+        elsif statements == LOVE
+          category = :love_points
+        elsif statements == TRANSCENDENCE
+          category = :transcendence_points
+        end
+        analysis(response, category)
+      end
     end
   end
 
   def daily_points
-    current_check_in = DailyCheckIn.where(:date => date, :user_id => @current_user[:id]).first
+    current_check_in = DailyCheckIn.where(:date => DailyCheckIn.date, :user_id => @current_user[:id]).first
     todays_points = current_check_in.physiological_points + current_check_in.safety_points + current_check_in.esteem_points + current_check_in.love_points + current_check_in.transcendence_points
     todays_points
   end
@@ -236,12 +214,8 @@ class Program
 
   def run
     welcome
-    date
-    physiological
-    safety
-    esteem
-    love
-    transcendence
+    DailyCheckIn.date
+    statements
     daily_report
     store
   end
