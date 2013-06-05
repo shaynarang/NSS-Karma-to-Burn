@@ -28,7 +28,6 @@ As of 05-27-2013, this application effectively prompts users, accepts responses,
 ## To Do:
 
 - The known bug as of 05-27-2013 needs to be addressed
-- Name and date of birth validation needs to be added
 - It may be beneficial to include individual categories on the progress chart
 
 ## Demo:
